@@ -1,20 +1,21 @@
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.image.Image;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label; // Nový import
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static java.lang.System.out;
 
 public class Board extends Canvas {
     public final int size = 8;
     public final int squareSize;
-    public ArrayList<Piece> pieces;
+
+    private List<Piece> pieces;
 
     private final Image blackPieceImage;
     private final Image whitePieceImage;
@@ -23,35 +24,48 @@ public class Board extends Canvas {
 
     private Piece selectedPiece = null;
     private boolean whiteTurn = true;
+    private boolean mustContinueJump = false;
 
-    private Player whitePlayer;
-    private Player blackPlayer;
+    private final Player whitePlayer;
+    private final Player blackPlayer;
     private int moveCount = 0;
-    private long gameStartTime;
-    private DataManager dataManager;
+    private final long gameStartTime;
+    private final DataManager dataManager;
     private boolean gameEnded = false;
+
+    // ZMĚNA: Odkaz na Label pro výpis textu
+    private final Label infoLabel;
+
+    // ZMĚNA: Přidán parametr Label infoLabel do konstruktoru
+    public Board(int width, int height, Player whitePlayer, Player blackPlayer, DataManager dataManager, Label infoLabel) {
+        super(width, height);
+
+        this.whitePlayer = whitePlayer;
+        this.blackPlayer = blackPlayer;
+        this.dataManager = dataManager;
+        this.infoLabel = infoLabel; // Uložení labelu
+        this.gameStartTime = System.currentTimeMillis();
+
+        this.pieces = new ArrayList<>();
+        this.squareSize = Math.min(width, height) / size;
+
+        this.blackPieceImage = loadImage("/images/black.png");
+        this.whitePieceImage = loadImage("/images/white.png");
+        this.queenBlackImage = loadImage("/images/qeenB.png");
+        this.queenWhiteImage = loadImage("/images/qeenW.png");
+
+        initializePieces();
+        drawBoard();
+
+        this.setOnMouseClicked(event -> handleClick(event.getX(), event.getY()));
+    }
 
     private Image loadImage(String path) {
         var url = Objects.requireNonNull(Board.class.getResource(path), "Nenašel jsem resource: " + path);
         return new Image(url.toExternalForm());
     }
 
-    public Board(int width, int height, Player whitePlayer, Player blackPlayer, DataManager dataManager) {
-        super(width, height);
-
-        this.whitePlayer = whitePlayer;
-        this.blackPlayer = blackPlayer;
-        this.dataManager = dataManager;
-        this.gameStartTime = System.currentTimeMillis();
-
-        pieces = new ArrayList<>();
-        squareSize = Math.min(width, height) / size;
-
-        blackPieceImage = loadImage("/images/black.png");
-        whitePieceImage = loadImage("/images/white.png");
-        queenBlackImage = loadImage("/images/qeenB.png");
-        queenWhiteImage = loadImage("/images/qeenW.png");
-
+    private void initializePieces() {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < size; col++) {
                 if ((row + col) % 2 == 0) {
@@ -67,76 +81,100 @@ public class Board extends Canvas {
                 }
             }
         }
+    }
 
-        drawBoard();
+    private void handleClick(double x, double y) {
+        if (gameEnded) return;
 
-        this.setOnMouseClicked(event -> {
-            if (gameEnded) {
+        int col = (int) (x / squareSize);
+        int row = (int) (y / squareSize);
+        Piece clickedPiece = findPieceAt(row, col);
+
+        if (mustContinueJump) {
+            if (clickedPiece != null && clickedPiece != selectedPiece) {
+                showAlert("Musíš dokončit skákání s vybranou figurkou!");
                 return;
             }
+        }
 
-            int col = (int)(event.getX() / squareSize);
-            int row = (int)(event.getY() / squareSize);
-            out.println("Klik: r=" + row + ", c=" + col);
+        boolean globalMustCapture = checkGlobalMustCapture();
 
-            Piece clickedPiece = findPieceAt(row, col);
+        if (clickedPiece != null) {
+            handlePieceSelection(clickedPiece, globalMustCapture);
+        } else if (selectedPiece != null) {
+            handleMoveAttempt(row, col, globalMustCapture);
+        }
 
-            boolean mustCapture = false;
-            for (Piece p : pieces) {
-                if ((whiteTurn && p.getColor() == Piece.PieceColor.WHITE) ||
-                        (!whiteTurn && p.getColor() == Piece.PieceColor.BLACK)) {
-                    if (hasCaptureFrom(p)) {
-                        mustCapture = true;
-                        break;
-                    }
-                }
+        drawBoard();
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Upozornění");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private boolean checkGlobalMustCapture() {
+        for (Piece p : pieces) {
+            if ((whiteTurn && p.getColor() == Piece.PieceColor.WHITE) ||
+                    (!whiteTurn && p.getColor() == Piece.PieceColor.BLACK)) {
+                if (hasCaptureFrom(p)) return true;
             }
+        }
+        return false;
+    }
 
-            if (clickedPiece != null) {
-                boolean belongsToCurrent = (whiteTurn && clickedPiece.getColor() == Piece.PieceColor.WHITE) ||
-                        (!whiteTurn && clickedPiece.getColor() == Piece.PieceColor.BLACK);
-                if (belongsToCurrent) {
-                    if (!mustCapture || hasCaptureFrom(clickedPiece)) {
-                        selectedPiece = clickedPiece;
-                        out.println("Vybraný panáček r=" + row + ", c=" + col);
-                    } else {
-                        out.println("Panáček, který musí brát");
-                    }
-                }
-            } else if (selectedPiece != null) {
-                Piece captured = getCapturedPieceIfAny(selectedPiece, row, col);
+    private void handlePieceSelection(Piece clickedPiece, boolean globalMustCapture) {
+        if (mustContinueJump) return;
 
-                if (mustCapture && captured == null) {
-                    out.println("Neplatný tah: je povinné brát");
-                } else if (captured != null) {
-                    pieces.remove(captured);
-                    selectedPiece.setPosition(row, col);
-                    boolean promoted = maybePromote(selectedPiece);
+        boolean belongsToCurrent = (whiteTurn && clickedPiece.getColor() == Piece.PieceColor.WHITE) ||
+                (!whiteTurn && clickedPiece.getColor() == Piece.PieceColor.BLACK);
 
-                    if (!promoted && hasCaptureFrom(selectedPiece)) {
-                        // Vícenásobné skákání
-                    } else {
-                        selectedPiece = null;
-                        whiteTurn = !whiteTurn;
-                        moveCount++;
-                        checkGameEnd();
-                    }
-                } else {
-                    if (!mustCapture && isValidSimpleMove(selectedPiece, row, col)) {
-                        selectedPiece.setPosition(row, col);
-                        maybePromote(selectedPiece);
-                        selectedPiece = null;
-                        whiteTurn = !whiteTurn;
-                        moveCount++;
-                        checkGameEnd();
-                    } else {
-                        out.println("Neplatný tah podle pravidel");
-                    }
-                }
+        if (belongsToCurrent) {
+            if (!globalMustCapture || hasCaptureFrom(clickedPiece)) {
+                selectedPiece = clickedPiece;
+            } else {
+                showAlert("Musíš táhnout figurkou, která může brát!");
             }
+        }
+    }
 
-            drawBoard();
-        });
+    private void handleMoveAttempt(int row, int col, boolean globalMustCapture) {
+        Piece captured = getCapturedPieceIfAny(selectedPiece, row, col);
+
+        if (globalMustCapture && captured == null) {
+            showAlert("Neplatný tah: je povinné brát!");
+            return;
+        }
+
+        if (captured != null) {
+            pieces.remove(captured);
+            selectedPiece.setPosition(row, col);
+            boolean promoted = maybePromote(selectedPiece);
+
+            if (!promoted && hasCaptureFrom(selectedPiece)) {
+                mustContinueJump = true;
+                showAlert("Musíš skákat dál!");
+            } else {
+                endTurn();
+            }
+        } else if (!globalMustCapture && isValidSimpleMove(selectedPiece, row, col)) {
+            selectedPiece.setPosition(row, col);
+            maybePromote(selectedPiece);
+            endTurn();
+        } else {
+            showAlert("Neplatný tah podle pravidel.");
+        }
+    }
+
+    private void endTurn() {
+        mustContinueJump = false;
+        selectedPiece = null;
+        whiteTurn = !whiteTurn;
+        moveCount++;
+        checkGameEnd();
     }
 
     private void checkGameEnd() {
@@ -169,7 +207,6 @@ public class Board extends Canvas {
         if (winner != null) {
             gameEnded = true;
             long gameDuration = System.currentTimeMillis() - gameStartTime;
-
             GameResult result = new GameResult(
                     whitePlayer.getName(),
                     blackPlayer.getName(),
@@ -177,37 +214,9 @@ public class Board extends Canvas {
                     moveCount,
                     gameDuration
             );
-
             dataManager.addGameResult(result);
-
             showGameEndDialog(winner, gameDuration);
         }
-    }
-
-    private boolean canPieceMove(Piece piece) {
-        if (hasCaptureFrom(piece)) {
-            return true;
-        }
-
-        int[][] dirs;
-        if (piece.isQueen()) {
-            dirs = new int[][] { {-1,-1}, {-1,1}, {1,-1}, {1,1} };
-        } else if (piece.getColor() == Piece.PieceColor.WHITE) {
-            dirs = new int[][] { {1,-1}, {1,1} };
-        } else {
-            dirs = new int[][] { {-1,-1}, {-1,1} };
-        }
-
-        for (int[] d : dirs) {
-            int tr = piece.getRow() + d[0];
-            int tc = piece.getCol() + d[1];
-            if (tr >= 0 && tr < size && tc >= 0 && tc < size &&
-                    (tr + tc) % 2 == 0 && findPieceAt(tr, tc) == null) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void showGameEndDialog(String winner, long gameDuration) {
@@ -218,17 +227,18 @@ public class Board extends Canvas {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Konec hry");
         alert.setHeaderText("Hra skončila!");
-        alert.setContentText(String.format("Vítěz: %s\n" + "Počet tahů: %d\n" + "Čas hry: %d:%02d\n" + "Výsledek byl uložen.", winner, moveCount, minutes, secs));
-
+        alert.setContentText(String.format("Vítěz: %s\nPočet tahů: %d\nČas hry: %d:%02d\nVýsledek byl uložen.",
+                winner, moveCount, minutes, secs));
         Optional<ButtonType> result = alert.showAndWait();
     }
 
     private void drawBoard() {
         GraphicsContext gc = getGraphicsContext2D();
 
-        for(int row = 0; row < size; row++) {
-            for(int col = 0; col < size; col++) {
-                if((row + col) % 2 == 0) {
+        // Kreslení šachovnice
+        for (int row = 0; row < size; row++) {
+            for (int col = 0; col < size; col++) {
+                if ((row + col) % 2 == 0) {
                     gc.setFill(Color.GREY);
                 } else {
                     gc.setFill(Color.WHITESMOKE);
@@ -237,6 +247,7 @@ public class Board extends Canvas {
             }
         }
 
+        // Zvýraznění výběru
         if (selectedPiece != null) {
             gc.setStroke(Color.YELLOW);
             gc.setLineWidth(4);
@@ -245,26 +256,32 @@ public class Board extends Canvas {
         }
 
         drawPieces(gc);
-        drawGameInfo(gc);
+
+        // ZMĚNA: Místo kreslení textu na plátno voláme aktualizaci Labelu
+        updateGameInfoLabel();
     }
 
-    private void drawGameInfo(GraphicsContext gc) {
-        gc.setFill(Color.BLACK);
-        gc.fillText("Bílý: " + whitePlayer.getName(), 10, 20);
-        gc.fillText("Černý: " + blackPlayer.getName(), 10, 40);
-        gc.fillText("Tahy: " + moveCount, 10, 60);
-        gc.fillText("Na tahu: " + (whiteTurn ? "Bílý" : "Černý"), 10, 80);
-
+    // ZMĚNA: Metoda pro aktualizaci textu v Labelu
+    private void updateGameInfoLabel() {
         long elapsed = (System.currentTimeMillis() - gameStartTime) / 1000;
         long minutes = elapsed / 60;
         long secs = elapsed % 60;
-        gc.fillText(String.format("Čas: %d:%02d", minutes, secs), 10, 100);
 
+        String infoText = String.format(
+                "Bílý: %s  |  Černý: %s\nTahy: %d  |  Na tahu: %s\nČas: %d:%02d",
+                whitePlayer.getName(),
+                blackPlayer.getName(),
+                moveCount,
+                whiteTurn ? "Bílý" : "Černý",
+                minutes, secs
+        );
 
+        // Nastavení textu do UI komponenty
+        infoLabel.setText(infoText);
     }
 
     private void drawPieces(GraphicsContext gc) {
-        for (IDrawable piece : pieces) {
+        for (Piece piece : pieces) {
             piece.draw(gc, squareSize);
         }
     }
@@ -282,29 +299,49 @@ public class Board extends Canvas {
         return a != null && b != null && a.getColor() != b.getColor();
     }
 
-    private boolean hasCaptureFrom(Piece piece) {
-        int[][] dirs;
+    private int[][] getDirections(Piece piece) {
         if (piece.isQueen()) {
-            dirs = new int[][] { {-2,-2}, {-2,2}, {2,-2}, {2,2} };
+            return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
         } else if (piece.getColor() == Piece.PieceColor.WHITE) {
-            dirs = new int[][] { {2,-2}, {2,2} };
+            return new int[][]{{1, -1}, {1, 1}};
         } else {
-            dirs = new int[][] { {-2,-2}, {-2,2} };
+            return new int[][]{{-1, -1}, {-1, 1}};
         }
+    }
+
+    private boolean canPieceMove(Piece piece) {
+        if (hasCaptureFrom(piece)) {
+            return true;
+        }
+        int[][] dirs = getDirections(piece);
+
         for (int[] d : dirs) {
             int tr = piece.getRow() + d[0];
             int tc = piece.getCol() + d[1];
-            if (tr < 0 || tr >= size || tc < 0 || tc >= size) {
-                continue;
+            if (tr >= 0 && tr < size && tc >= 0 && tc < size &&
+                    (tr + tc) % 2 == 0 && findPieceAt(tr, tc) == null) {
+                return true;
             }
-            if ((tr + tc) % 2 != 0) {
+        }
+        return false;
+    }
+
+    private boolean hasCaptureFrom(Piece piece) {
+        int[][] dirs = getDirections(piece);
+
+        for (int[] d : dirs) {
+            int tr = piece.getRow() + d[0] * 2;
+            int tc = piece.getCol() + d[1] * 2;
+
+            if (tr < 0 || tr >= size || tc < 0 || tc >= size) {
                 continue;
             }
             if (findPieceAt(tr, tc) != null) {
                 continue;
             }
-            int mr = piece.getRow() + d[0]/2;
-            int mc = piece.getCol() + d[1]/2;
+
+            int mr = piece.getRow() + d[0];
+            int mc = piece.getCol() + d[1];
             Piece mid = findPieceAt(mr, mc);
             if (isOpponent(piece, mid)) {
                 return true;
@@ -316,11 +353,12 @@ public class Board extends Canvas {
     private Piece getCapturedPieceIfAny(Piece piece, int targetRow, int targetCol) {
         int dr = targetRow - piece.getRow();
         int dc = targetCol - piece.getCol();
+
         if (Math.abs(dr) == 2 && Math.abs(dc) == 2) {
             if (targetRow >= 0 && targetRow < size && targetCol >= 0 && targetCol < size &&
-                    (targetRow + targetCol) % 2 == 0 && findPieceAt(targetRow, targetCol) == null) {
-                int mr = piece.getRow() + dr/2;
-                int mc = piece.getCol() + dc/2;
+                    findPieceAt(targetRow, targetCol) == null) {
+                int mr = piece.getRow() + dr / 2;
+                int mc = piece.getCol() + dc / 2;
                 Piece mid = findPieceAt(mr, mc);
                 if (isOpponent(piece, mid)) {
                     return mid;
@@ -337,16 +375,17 @@ public class Board extends Canvas {
         if (findPieceAt(targetRow, targetCol) != null) {
             return false;
         }
+
         int dr = targetRow - piece.getRow();
-        int dc = Math.abs(targetCol - piece.getCol());
-        if (piece.isQueen()) {
-            return Math.abs(dr) == 1 && dc == 1;
+        int dc = targetCol - piece.getCol();
+
+        int[][] dirs = getDirections(piece);
+        for (int[] d : dirs) {
+            if (d[0] == dr && d[1] == dc) {
+                return true;
+            }
         }
-        if (piece.getColor() == Piece.PieceColor.WHITE) {
-            return dr == 1 && dc == 1;
-        } else {
-            return dr == -1 && dc == 1;
-        }
+        return false;
     }
 
     private boolean maybePromote(Piece piece) {
@@ -365,4 +404,3 @@ public class Board extends Canvas {
         return promoted;
     }
 }
-

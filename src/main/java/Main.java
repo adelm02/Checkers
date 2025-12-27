@@ -166,10 +166,14 @@ public class Main extends Application {
     }
 
     private void startGame(Player whitePlayer, Player blackPlayer) {
-        Board board = new Board(800, 800, whitePlayer, blackPlayer, dataManager);
+        Label infoLabel = new Label();
+        infoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
+
+        Board board = new Board(800, 800, whitePlayer, blackPlayer, dataManager, infoLabel);
 
         VBox gameBox = new VBox(10);
         gameBox.setPadding(new Insets(10));
+        gameBox.setAlignment(Pos.CENTER); // Zarovnání na střed
 
         Button backButton = new Button("Zpět do menu");
         backButton.setOnAction(e -> {
@@ -185,9 +189,10 @@ public class Main extends Application {
             });
         });
 
-        gameBox.getChildren().addAll(board, backButton);
+        // nad hru
+        gameBox.getChildren().addAll(infoLabel, board, backButton);
 
-        Scene scene = new Scene(gameBox, 820, 880);
+        Scene scene = new Scene(gameBox, 850, 950);
         primaryStage.setScene(scene);
     }
 
