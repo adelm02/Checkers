@@ -1,3 +1,10 @@
+/*
+ * Main
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -5,9 +12,13 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-
 import java.util.List;
 
+
+/**
+ * Main entry point for the Checkers game.
+ * Handles all UI screens and navigation.
+ */
 public class Main extends Application {
     private DataManager dataManager;
     private Stage primaryStage;
@@ -23,6 +34,9 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Shows the main menu with game options.
+     */
     private void showMainMenu() {
         VBox menuBox = new VBox(15);
         menuBox.setPadding(new Insets(20));
@@ -50,6 +64,9 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+    /**
+     * Login screen where players enter their names.
+     */
     private void showLoginScreen() {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(20));
@@ -110,6 +127,9 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+    /**
+     * Statistics screen with top players and game history.
+     */
     private void showStatistics() {
         TabPane tabPane = new TabPane();
 
@@ -132,7 +152,7 @@ public class Main extends Application {
         playersBox.getChildren().addAll(playersTitle, playersArea);
         playersTab.setContent(playersBox);
 
-        // vsechny hry
+        // all games
         Tab allGamesTab = new Tab("Všechny hry");
         allGamesTab.setClosable(false);
         VBox allGamesBox = new VBox(10);
@@ -165,6 +185,9 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+    /**
+     * Starts a new game with the given players.
+     */
     private void startGame(Player whitePlayer, Player blackPlayer) {
         Label infoLabel = new Label();
         infoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
@@ -189,7 +212,7 @@ public class Main extends Application {
             });
         });
 
-        // nad hru
+        // above game
         gameBox.getChildren().addAll(infoLabel, board, backButton);
 
         Scene scene = new Scene(gameBox, 850, 950);

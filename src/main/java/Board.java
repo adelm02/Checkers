@@ -1,8 +1,16 @@
+/*
+ * Board
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label; // Nový import
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
@@ -11,6 +19,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Game board for checkers.
+ * Handles the game state, pieces, turns and user clicks.
+ */
 public class Board extends Canvas {
     public final int size = 8;
     public final int squareSize;
@@ -33,17 +45,15 @@ public class Board extends Canvas {
     private final DataManager dataManager;
     private boolean gameEnded = false;
 
-    // ZMĚNA: Odkaz na Label pro výpis textu
     private final Label infoLabel;
 
-    // ZMĚNA: Přidán parametr Label infoLabel do konstruktoru
     public Board(int width, int height, Player whitePlayer, Player blackPlayer, DataManager dataManager, Label infoLabel) {
         super(width, height);
 
         this.whitePlayer = whitePlayer;
         this.blackPlayer = blackPlayer;
         this.dataManager = dataManager;
-        this.infoLabel = infoLabel; // Uložení labelu
+        this.infoLabel = infoLabel; // label save
         this.gameStartTime = System.currentTimeMillis();
 
         this.pieces = new ArrayList<>();
@@ -65,6 +75,9 @@ public class Board extends Canvas {
         return new Image(url.toExternalForm());
     }
 
+    /**
+     * Sets up initial piece positions on the board.
+     */
     private void initializePieces() {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < size; col++) {
@@ -83,13 +96,16 @@ public class Board extends Canvas {
         }
     }
 
+    /**
+     * Handles mouse clicks on the board.
+     */
     private void handleClick(double x, double y) {
         if (gameEnded) return;
 
         int col = (int) (x / squareSize);
         int row = (int) (y / squareSize);
         Piece clickedPiece = findPieceAt(row, col);
-
+        // if in middle of a multi-jump, only allow continue
         if (mustContinueJump) {
             if (clickedPiece != null && clickedPiece != selectedPiece) {
                 showAlert("Musíš dokončit skákání s vybranou figurkou!");
@@ -108,6 +124,7 @@ public class Board extends Canvas {
         drawBoard();
     }
 
+
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Upozornění");
@@ -116,6 +133,9 @@ public class Board extends Canvas {
         alert.showAndWait();
     }
 
+    /**
+     * Checks if any piece of current player can capture.
+     */
     private boolean checkGlobalMustCapture() {
         for (Piece p : pieces) {
             if ((whiteTurn && p.getColor() == Piece.PieceColor.WHITE) ||
@@ -126,6 +146,9 @@ public class Board extends Canvas {
         return false;
     }
 
+    /**
+     * Handles when player clicks on a piece.
+     */
     private void handlePieceSelection(Piece clickedPiece, boolean globalMustCapture) {
         if (mustContinueJump) return;
 
@@ -141,6 +164,9 @@ public class Board extends Canvas {
         }
     }
 
+    /**
+     * Handles when player tries to move selected piece.
+     */
     private void handleMoveAttempt(int row, int col, boolean globalMustCapture) {
         Piece captured = getCapturedPieceIfAny(selectedPiece, row, col);
 
@@ -177,6 +203,9 @@ public class Board extends Canvas {
         checkGameEnd();
     }
 
+    /**
+     * Checks if game has ended (no pieces or no valid moves).
+     */
     private void checkGameEnd() {
         int whitePieces = 0;
         int blackPieces = 0;
@@ -232,10 +261,13 @@ public class Board extends Canvas {
         Optional<ButtonType> result = alert.showAndWait();
     }
 
+    /**
+     * Draws the board and all pieces.
+     */
     private void drawBoard() {
         GraphicsContext gc = getGraphicsContext2D();
 
-        // Kreslení šachovnice
+        // draw checkerboard
         for (int row = 0; row < size; row++) {
             for (int col = 0; col < size; col++) {
                 if ((row + col) % 2 == 0) {
@@ -247,7 +279,7 @@ public class Board extends Canvas {
             }
         }
 
-        // Zvýraznění výběru
+        // highlight selected piece
         if (selectedPiece != null) {
             gc.setStroke(Color.YELLOW);
             gc.setLineWidth(4);
@@ -256,12 +288,10 @@ public class Board extends Canvas {
         }
 
         drawPieces(gc);
-
-        // ZMĚNA: Místo kreslení textu na plátno voláme aktualizaci Labelu
         updateGameInfoLabel();
     }
 
-    // ZMĚNA: Metoda pro aktualizaci textu v Labelu
+
     private void updateGameInfoLabel() {
         long elapsed = (System.currentTimeMillis() - gameStartTime) / 1000;
         long minutes = elapsed / 60;
@@ -275,8 +305,6 @@ public class Board extends Canvas {
                 whiteTurn ? "Bílý" : "Černý",
                 minutes, secs
         );
-
-        // Nastavení textu do UI komponenty
         infoLabel.setText(infoText);
     }
 
@@ -299,6 +327,10 @@ public class Board extends Canvas {
         return a != null && b != null && a.getColor() != b.getColor();
     }
 
+    /**
+     * Returns valid movement directions for a piece.
+     * Queens can move in all diagonals, regular pieces only forward.
+     */
     private int[][] getDirections(Piece piece) {
         if (piece.isQueen()) {
             return new int[][]{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
@@ -326,6 +358,9 @@ public class Board extends Canvas {
         return false;
     }
 
+    /**
+     * Checks if piece can capture from current position.
+     */
     private boolean hasCaptureFrom(Piece piece) {
         int[][] dirs = getDirections(piece);
 
@@ -350,6 +385,9 @@ public class Board extends Canvas {
         return false;
     }
 
+    /**
+     * Returns the piece that would be captured by this move, or null.
+     */
     private Piece getCapturedPieceIfAny(Piece piece, int targetRow, int targetCol) {
         int dr = targetRow - piece.getRow();
         int dc = targetCol - piece.getCol();
@@ -388,6 +426,9 @@ public class Board extends Canvas {
         return false;
     }
 
+    /**
+     * Promotes piece to queen if it reaches the end.
+     */
     private boolean maybePromote(Piece piece) {
         boolean promoted = false;
         if (!piece.isQueen()) {

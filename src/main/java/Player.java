@@ -1,5 +1,15 @@
+/*
+ * Player
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import java.io.Serializable;
 
+/**
+ * Represents a player with their statistics.
+ */
 public class Player implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -21,7 +31,9 @@ public class Player implements Serializable {
         return name;
     }
 
-    // Nastavení statistik při načítání z CSV
+    /**
+     * Sets stats when loading from CSV file.
+     */
     public void setStats(int gamesPlayed, int gamesWon, int totalMoves, long totalTimeMillis) {
         this.gamesPlayed = gamesPlayed;
         this.gamesWon = gamesWon;
@@ -29,6 +41,9 @@ public class Player implements Serializable {
         this.totalTimeMillis = totalTimeMillis;
     }
 
+    /**
+     * Records a game result.
+     */
     public void addGameResult(boolean won, int moves, long timeMillis) {
         gamesPlayed++;
         if (won) {

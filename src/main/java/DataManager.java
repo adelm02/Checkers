@@ -1,9 +1,19 @@
+/*
+ * DataManager
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Manages saving and loading player data and game results.
+ */
 public class DataManager {
     private static final String DATA_DIR = "data/";
     private static final String PLAYERS_FILE = DATA_DIR + "players.csv";
@@ -31,7 +41,9 @@ public class DataManager {
         loadResults();
     }
 
-
+    /**
+     * Loads player data from CSV.
+     */
     private void loadPlayers() {
         File file = new File(PLAYERS_FILE);
         if (!file.exists()) {
@@ -39,7 +51,7 @@ public class DataManager {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = br.readLine(); // skip hlavičku
+            String line = br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length >= 5) {
@@ -59,7 +71,7 @@ public class DataManager {
         }
     }
 
-    // Načtení výsledků z CSV
+
     private void loadResults() {
         File file = new File(RESULTS_FILE);
         if (!file.exists()) {
@@ -67,7 +79,7 @@ public class DataManager {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = br.readLine(); // skip hlavičku
+            String line = br.readLine(); // skip head
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length >= 5) {
@@ -86,7 +98,9 @@ public class DataManager {
         }
     }
 
-    // Uložení hráčů do CSV
+    /**
+     * Save players to CSV file.
+     */
     private void savePlayers() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(PLAYERS_FILE))) {
 
@@ -106,7 +120,9 @@ public class DataManager {
         }
     }
 
-    // Uložení výsledků do CSV
+    /**
+     * Save game results to CSV files.
+     */
     private void saveResults() {
         try (PrintWriter writer = new PrintWriter(new FileWriter(RESULTS_FILE))) {
             writer.println("white,black,winner,moves,duration");
@@ -129,6 +145,9 @@ public class DataManager {
         saveResults();
     }
 
+    /**
+     * Logs in a player or creates new one.
+     */
     public Player loginPlayer(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Jméno hráče nesmí být prázdné.");
@@ -136,22 +155,23 @@ public class DataManager {
 
         String key = name.trim();
 
-        // Pokud hráč existuje, vrátíme ho
         if (players.containsKey(key)) {
             return players.get(key);
         }
 
-        // Pokud neexistuje, vytvořím nového
         Player player = new Player(key);
         players.put(key, player);
         saveData();
         return player;
     }
 
+    /**
+     * Adds game result and updates player stats.
+     */
     public void addGameResult(GameResult result) {
         gameResults.add(result);
 
-        // Aktualizace statistik hráčů
+        //update
         Player whitePlayer = players.get(result.getWhitePlayerName());
         Player blackPlayer = players.get(result.getBlackPlayerName());
 

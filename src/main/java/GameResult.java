@@ -1,7 +1,17 @@
+/*
+ * GameResult
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Stores result of a completed game.
+ */
 public class GameResult implements Serializable, Comparable<GameResult> {
     private static final long serialVersionUID = 1L;
 

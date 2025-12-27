@@ -1,6 +1,16 @@
+/*
+ * GameObject
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import javafx.scene.image.Image;
 import javafx.scene.canvas.GraphicsContext;
 
+/**
+ * Base class for drawable game objects.
+ */
 public abstract class GameObject implements IDrawable, IPositionable {
     protected Image image;
     protected int row;

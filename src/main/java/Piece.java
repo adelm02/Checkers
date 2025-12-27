@@ -1,5 +1,15 @@
+/*
+ * Piece
+ *
+ * Version 1.0
+ *
+ * 2025 Checkers Project
+ */
 import javafx.scene.image.Image;
 
+/**
+ * Represents a checker piece.
+ */
 public class Piece extends GameObject {
     public enum PieceColor {
         WHITE, BLACK
