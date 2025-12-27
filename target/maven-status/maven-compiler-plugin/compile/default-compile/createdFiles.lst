@@ -1,0 +1,11 @@
+IDrawable.class
+Board.class
+Player.class
+GameResult.class
+GameObject.class
+Main.class
+IPositionable.class
+DataManager.class
+Piece.class
+Piece$PieceColor.class
+DummzController.class
