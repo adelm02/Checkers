@@ -20,6 +20,20 @@ import javafx.stage.Stage;
  * Handles all UI screens and navigation.
  */
 public class Main extends Application {
+    private final int MENU_WIDTH = 500;
+    private final int MENU_HEIGHT = 500;
+
+    private final int LOGIN_WIDTH = 600;
+    private final int LOGIN_HEIGHT = 350;
+
+    private final int STATS_WIDTH = 800;
+    private final int STATS_HEIGHT = 600;
+
+    private final int GAME_WINDOW_WIDTH = 850;
+    private final int GAME_WINDOW_HEIGHT = 950;
+
+    private final int BOARD_SIZE = 800;
+
     private DataManager dataManager;
     private Stage primaryStage;
 
@@ -65,7 +79,7 @@ public class Main extends Application {
 
         menuBox.getChildren().addAll(titleLabel, newGameButton, statsButton, exitButton);
 
-        Scene scene = new Scene(menuBox, 500, 500);
+        Scene scene = new Scene(menuBox, MENU_WIDTH, MENU_HEIGHT);
         loadStyles(scene);
 
         primaryStage.setScene(scene);
@@ -141,7 +155,7 @@ public class Main extends Application {
             startGame(whitePlayer, blackPlayer);
         });
 
-        Scene scene = new Scene(root, 600, 350);
+        Scene scene = new Scene(root, LOGIN_WIDTH, LOGIN_HEIGHT);
         loadStyles(scene);
 
         primaryStage.setScene(scene);
@@ -232,7 +246,7 @@ public class Main extends Application {
 
         mainBox.getChildren().addAll(tabPane, backButton);
 
-        Scene scene = new Scene(mainBox, 800, 600);
+        Scene scene = new Scene(mainBox, STATS_WIDTH, STATS_HEIGHT);
         loadStyles(scene);
 
         primaryStage.setScene(scene);
@@ -242,7 +256,7 @@ public class Main extends Application {
         Label infoLabel = new Label();
         infoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        Board board = new Board(800, 800, whitePlayer, blackPlayer, dataManager, infoLabel);
+        Board board = new Board(BOARD_SIZE, BOARD_SIZE, whitePlayer, blackPlayer, dataManager, infoLabel);
 
         VBox gameBox = new VBox(10);
         gameBox.setPadding(new Insets(10));
@@ -251,10 +265,14 @@ public class Main extends Application {
         Button backButton = new Button("Ukončit hru");
         backButton.getStyleClass().add("button-cancel");
         backButton.setOnAction(e -> {
+            if (board.isGameEnded()) {
+                showMainMenu();
+                return;
+            }
+
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Ukončit");
-            alert.setHeaderText("Opravdu chcete ukončit hru?");
-            alert.setContentText("Hra nebude uložena.");
+            alert.setContentText("Hra probíhá a nebude uložena.");
 
             alert.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
@@ -265,7 +283,7 @@ public class Main extends Application {
 
         gameBox.getChildren().addAll(infoLabel, board, backButton);
 
-        Scene scene = new Scene(gameBox, 850, 950);
+        Scene scene = new Scene(gameBox, GAME_WINDOW_WIDTH, GAME_WINDOW_HEIGHT);
         loadStyles(scene);
         primaryStage.setScene(scene);
     }

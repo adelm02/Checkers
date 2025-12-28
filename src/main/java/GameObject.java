@@ -13,6 +13,7 @@ import javafx.scene.canvas.GraphicsContext;
  */
 public abstract class GameObject implements IDrawable, IPositionable {
     protected Image image;
+    private final double pieceScale = 1.8;
     protected int row;
     protected int col;
 
@@ -44,8 +45,8 @@ public abstract class GameObject implements IDrawable, IPositionable {
 
     @Override
     public void draw(GraphicsContext gc, int squareSize) {
-        double pieceSize = squareSize * 1.8;
-        double aspect = image.getHeight() / (double) image.getWidth();
+        double pieceSize = squareSize * pieceScale;
+        double aspect = image.getHeight() / image.getWidth();
         double drawWidth = pieceSize;
         double drawHeight = pieceSize * aspect;
         double offsetX = (squareSize - drawWidth) / 2;

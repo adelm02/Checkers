@@ -95,6 +95,13 @@ public class Board extends Canvas {
     }
 
     /**
+     * Returns true if the game has already finished.
+     */
+    public boolean isGameEnded() {
+        return gameEnded;
+    }
+
+    /**
      * Handles mouse clicks on the board.
      */
     private void handleClick(double x, double y) {

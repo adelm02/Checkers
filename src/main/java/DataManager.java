@@ -15,9 +15,10 @@ import java.util.Map;
  * Manages saving and loading player data and game results.
  */
 public class DataManager {
-    private final String DATA_DIR = "data/";
-    private final String PLAYERS_FILE = DATA_DIR + "players.csv";
-    private final String RESULTS_FILE = DATA_DIR + "results.csv";
+    private static final String DATA_DIR = "data/";
+    private static final String PLAYERS_FILE = DATA_DIR + "players.csv";
+    private static final String RESULTS_FILE = DATA_DIR + "results.csv";
+    private final int expectedCsvColumns = 5;
 
     private final Map<String, Player> players;
     private final List<GameResult> gameResults;
@@ -59,7 +60,7 @@ public class DataManager {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length >= 5) {
+                if (parts.length >= expectedCsvColumns) {
                     String name = parts[0];
                     int gamesPlayed = Integer.parseInt(parts[1]);
                     int gamesWon = Integer.parseInt(parts[2]);
@@ -92,7 +93,7 @@ public class DataManager {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length >= 5) {
+                if (parts.length >= expectedCsvColumns) {
                     String white = parts[0];
                     String black = parts[1];
                     String winner = parts[2];
