@@ -10,8 +10,7 @@ import java.io.Serializable;
 /**
  * Represents a player with their statistics.
  */
-public class Player implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Player {
 
     private String name;
     private int gamesPlayed;

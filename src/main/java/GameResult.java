@@ -5,22 +5,21 @@
  *
  * 2025 Checkers Project
  */
-import java.io.Serializable;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * Stores result of a completed game.
  */
-public class GameResult implements Serializable, Comparable<GameResult> {
-    private static final long serialVersionUID = 1L;
+public class GameResult implements  Comparable<GameResult> {
 
-    private String whitePlayerName;
-    private String blackPlayerName;
-    private String winner;
-    private int totalMoves;
-    private long gameDurationMillis;
-    private LocalDateTime timestamp;
+    private final String whitePlayerName;
+    private final String blackPlayerName;
+    private final String winner;
+    private final int totalMoves;
+    private final long gameDurationMillis;
+    private final LocalDateTime timestamp;
 
     public GameResult(String whitePlayerName, String blackPlayerName, String winner,
                       int totalMoves, long gameDurationMillis) {
@@ -54,10 +53,6 @@ public class GameResult implements Serializable, Comparable<GameResult> {
 
     public long getGameDurationSeconds() {
         return gameDurationMillis / 1000;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
     }
 
     @Override

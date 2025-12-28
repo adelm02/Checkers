@@ -19,8 +19,8 @@ public class DataManager {
     private static final String PLAYERS_FILE = DATA_DIR + "players.csv";
     private static final String RESULTS_FILE = DATA_DIR + "results.csv";
 
-    private Map<String, Player> players;
-    private List<GameResult> gameResults;
+    private final Map<String, Player> players;
+    private final List<GameResult> gameResults;
 
     public DataManager() {
         players = new HashMap<>();
@@ -51,7 +51,12 @@ public class DataManager {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = br.readLine();
+            String header = br.readLine();
+            if (header == null) {
+                return;
+            }
+
+            String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length >= 5) {
@@ -79,7 +84,12 @@ public class DataManager {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = br.readLine(); // skip head
+            String header = br.readLine();
+            if (header == null) {
+                return;
+            }
+
+            String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts.length >= 5) {
@@ -192,23 +202,9 @@ public class DataManager {
         return new ArrayList<>(gameResults);
     }
 
-    public List<GameResult> getTopResults(int limit) {
-        List<GameResult> sorted = new ArrayList<>(gameResults);
-        sorted.sort(null);
-        return sorted.subList(0, Math.min(limit, sorted.size()));
-    }
-
     public List<Player> getTopPlayers(int limit) {
         List<Player> playerList = new ArrayList<>(players.values());
         playerList.sort((p1, p2) -> Double.compare(p2.getWinRate(), p1.getWinRate()));
         return playerList.subList(0, Math.min(limit, playerList.size()));
-    }
-
-    public Player getPlayer(String name) {
-        return players.get(name);
-    }
-
-    public boolean playerExists(String name) {
-        return players.containsKey(name);
     }
 }

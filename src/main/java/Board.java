@@ -9,7 +9,6 @@
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
@@ -17,7 +16,6 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Game board for checkers.
@@ -35,7 +33,7 @@ public class Board extends Canvas {
     private final Image queenWhiteImage;
 
     private Piece selectedPiece = null;
-    private boolean whiteTurn = true;
+    private boolean whiteTurn = false;
     private boolean mustContinueJump = false;
 
     private final Player whitePlayer;
@@ -100,7 +98,9 @@ public class Board extends Canvas {
      * Handles mouse clicks on the board.
      */
     private void handleClick(double x, double y) {
-        if (gameEnded) return;
+        if (gameEnded) {
+            return;
+        }
 
         int col = (int) (x / squareSize);
         int row = (int) (y / squareSize);
@@ -191,7 +191,7 @@ public class Board extends Canvas {
             maybePromote(selectedPiece);
             endTurn();
         } else {
-            showAlert("Neplatný tah podle pravidel.");
+            showAlert("Neplatný tah.");
         }
     }
 
@@ -256,9 +256,11 @@ public class Board extends Canvas {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Konec hry");
         alert.setHeaderText("Hra skončila!");
-        alert.setContentText(String.format("Vítěz: %s\nPočet tahů: %d\nČas hry: %d:%02d\nVýsledek byl uložen.",
+
+        alert.setContentText(String.format("Vítěz: %s%nPočet tahů: %d%nČas hry: %d:%02d%nVýsledek byl uložen.",
                 winner, moveCount, minutes, secs));
-        Optional<ButtonType> result = alert.showAndWait();
+
+        alert.showAndWait();
     }
 
     /**
@@ -298,10 +300,7 @@ public class Board extends Canvas {
         long secs = elapsed % 60;
 
         String infoText = String.format(
-                "Bílý: %s  |  Černý: %s\nTahy: %d  |  Na tahu: %s\nČas: %d:%02d",
-                whitePlayer.getName(),
-                blackPlayer.getName(),
-                moveCount,
+                "Bílý: %s  |  Černý: %s%nTahy: %d  |  Na tahu: %s%nČas: %d:%02d", whitePlayer.getName(), blackPlayer.getName(), moveCount,
                 whiteTurn ? "Bílý" : "Černý",
                 minutes, secs
         );
@@ -393,6 +392,23 @@ public class Board extends Canvas {
         int dc = targetCol - piece.getCol();
 
         if (Math.abs(dr) == 2 && Math.abs(dc) == 2) {
+
+            //direction check
+            int stepRow = dr / 2;
+            int stepCol = dc / 2;
+
+            boolean directionAllowed = false;
+            for (int[] d : getDirections(piece)) {
+                if (d[0] == stepRow && d[1] == stepCol) {
+                    directionAllowed = true;
+                    break;
+                }
+            }
+
+            if (!directionAllowed) {
+                return null;
+            }
+
             if (targetRow >= 0 && targetRow < size && targetCol >= 0 && targetCol < size &&
                     findPieceAt(targetRow, targetCol) == null) {
                 int mr = piece.getRow() + dr / 2;

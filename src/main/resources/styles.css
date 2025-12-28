@@ -1,0 +1,84 @@
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-font-family: 'Arial', sans-serif;
+}
+
+.title-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+    -fx-padding: 0 0 20 0;
+}
+
+.subtitle-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+}
+
+/* buttons */
+.button {
+    -fx-background-color: #555;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+
+.button:hover {
+    -fx-background-color: #333;
+}
+
+.button-action {
+    -fx-background-color: #2e8b57;
+}
+
+.button-action:hover {
+    -fx-background-color: #1e5b39;
+}
+
+.button-cancel {
+    -fx-background-color: #d9534f;
+}
+
+.button-cancel:hover {
+    -fx-background-color: #c9302c;
+}
+
+
+.text-field {
+    -fx-background-radius: 3;
+    -fx-padding: 5;
+    -fx-font-size: 14px;
+}
+
+/* table */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 3;
+}
+
+.table-view .column-header {
+    -fx-background-color: #eee;
+    -fx-border-color: #ccc;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: #eee;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #dbeeff;
+}

@@ -1,19 +1,19 @@
 /*
  * Main
  *
- * Version 1.0
+ * Version 1.1
  *
  * 2025 Checkers Project
  */
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import java.util.List;
-
 
 /**
  * Main entry point for the Checkers game.
@@ -30,7 +30,7 @@ public class Main extends Application {
 
         showMainMenu();
 
-        primaryStage.setTitle("Dámy - Checkers");
+        primaryStage.setTitle("Checkers");
         primaryStage.show();
     }
 
@@ -38,29 +38,36 @@ public class Main extends Application {
      * Shows the main menu with game options.
      */
     private void showMainMenu() {
-        VBox menuBox = new VBox(15);
-        menuBox.setPadding(new Insets(20));
+        VBox menuBox = new VBox(20);
+        menuBox.setPadding(new Insets(40));
         menuBox.setAlignment(Pos.CENTER);
-        menuBox.setStyle("-fx-background-color: #f0f0f0;");
 
-        Label titleLabel = new Label("DÁMY");
-        titleLabel.setStyle("-fx-font-size: 36px; -fx-font-weight: bold;");
+        Label titleLabel = new Label("Checkers");
+        titleLabel.getStyleClass().add("title-label");
 
         Button newGameButton = new Button("Nová hra");
-        newGameButton.setPrefWidth(200);
-        newGameButton.setOnAction(e -> showLoginScreen());
+        newGameButton.getStyleClass().add("button-action");
+        newGameButton.setOnAction(e -> {
+            showLoginScreen();
+        });
 
         Button statsButton = new Button("Statistiky");
-        statsButton.setPrefWidth(200);
-        statsButton.setOnAction(e -> showStatistics());
+        statsButton.getStyleClass().add("button");
+        statsButton.setOnAction(e -> {
+            showStatistics();
+        });
 
         Button exitButton = new Button("Konec");
-        exitButton.setPrefWidth(200);
-        exitButton.setOnAction(e -> primaryStage.close());
+        exitButton.getStyleClass().add("button-cancel");
+        exitButton.setOnAction(e -> {
+            primaryStage.close();
+        });
 
         menuBox.getChildren().addAll(titleLabel, newGameButton, statsButton, exitButton);
 
-        Scene scene = new Scene(menuBox, 400, 400);
+        Scene scene = new Scene(menuBox, 500, 500);
+        loadStyles(scene);
+
         primaryStage.setScene(scene);
     }
 
@@ -68,50 +75,61 @@ public class Main extends Application {
      * Login screen where players enter their names.
      */
     private void showLoginScreen() {
-        GridPane grid = new GridPane();
-        grid.setPadding(new Insets(20));
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setAlignment(Pos.CENTER);
-        grid.setStyle("-fx-background-color: #f0f0f0;");
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER);
 
         Label titleLabel = new Label("Přihlášení hráčů");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
-        GridPane.setColumnSpan(titleLabel, 2);
+        titleLabel.getStyleClass().add("subtitle-label");
 
+        HBox playersBox = new HBox(20);
+        playersBox.setAlignment(Pos.CENTER);
+
+        // whitw player
+        VBox whiteBox = new VBox(5);
         Label whiteLabel = new Label("Bílý hráč:");
-        whiteLabel.setStyle("-fx-font-weight: bold;");
         TextField whiteNameField = new TextField();
         whiteNameField.setPromptText("Jméno");
+        whiteBox.getChildren().addAll(whiteLabel, whiteNameField);
 
+        // black player
+        VBox blackBox = new VBox(5);
         Label blackLabel = new Label("Černý hráč:");
-        blackLabel.setStyle("-fx-font-weight: bold;");
         TextField blackNameField = new TextField();
         blackNameField.setPromptText("Jméno");
+        blackBox.getChildren().addAll(blackLabel, blackNameField);
+
+        playersBox.getChildren().addAll(whiteBox, blackBox);
 
         Button loginButton = new Button("Přihlásit a hrát");
-        loginButton.setPrefWidth(150);
+        loginButton.getStyleClass().add("button-action");
 
         Button backButton = new Button("Zpět");
-        backButton.setPrefWidth(150);
-        backButton.setOnAction(e -> showMainMenu());
+        backButton.getStyleClass().add("button-cancel");
+        backButton.setOnAction(e -> {
+            showMainMenu();
+        });
 
-        grid.add(titleLabel, 0, 0, 2, 1);
-        grid.add(whiteLabel, 0, 1);
-        grid.add(whiteNameField, 0, 2);
-        grid.add(blackLabel, 1, 1);
-        grid.add(blackNameField, 1, 2);
-        grid.add(loginButton, 0, 4);
-        grid.add(backButton, 0, 5, 2, 1);
+        root.getChildren().addAll(titleLabel, playersBox, loginButton, backButton);
 
+        // login
         loginButton.setOnAction(e -> {
-            String whiteName = whiteNameField.getText() == null ? "" : whiteNameField.getText().trim();
-            String blackName = blackNameField.getText() == null ? "" : blackNameField.getText().trim();
+            // "," for csv
+            String whiteName = "";
+            if (whiteNameField.getText() != null) {
+                whiteName = whiteNameField.getText().replace(",", "").trim();
+            }
+
+            String blackName = "";
+            if (blackNameField.getText() != null) {
+                blackName = blackNameField.getText().replace(",", "").trim();
+            }
 
             if (whiteName.isEmpty() || blackName.isEmpty()) {
                 showAlert("Chyba", "Vyplňte obě jména hráčů.");
                 return;
             }
+
             if (whiteName.equals(blackName)) {
                 showAlert("Chyba", "Hráči musí mít různá jména!");
                 return;
@@ -123,85 +141,118 @@ public class Main extends Application {
             startGame(whitePlayer, blackPlayer);
         });
 
-        Scene scene = new Scene(grid, 600, 300);
+        Scene scene = new Scene(root, 600, 350);
+        loadStyles(scene);
+
         primaryStage.setScene(scene);
     }
 
     /**
-     * Statistics screen with top players and game history.
+     * Statistics screen using TableView.
      */
     private void showStatistics() {
         TabPane tabPane = new TabPane();
 
         Tab playersTab = new Tab("Nejlepší hráči");
         playersTab.setClosable(false);
+
         VBox playersBox = new VBox(10);
-        playersBox.setPadding(new Insets(10));
-        Label playersTitle = new Label("TOP 10 HRÁČŮ");
-        playersTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        TextArea playersArea = new TextArea();
-        playersArea.setEditable(false);
-        playersArea.setPrefHeight(400);
-        List<Player> topPlayers = dataManager.getTopPlayers(10);
-        StringBuilder playersSb = new StringBuilder();
-        int rank = 1;
-        for (Player player : topPlayers) {
-            playersSb.append(String.format("%d. %s%n", rank++, player.toString()));
-        }
-        playersArea.setText(playersSb.toString());
-        playersBox.getChildren().addAll(playersTitle, playersArea);
+        playersBox.setPadding(new Insets(15));
+
+        Label playersTitle = new Label("Žebříček hráčů");
+        playersTitle.getStyleClass().add("subtitle-label");
+
+        TableView<Player> playersTable = new TableView<>();
+        playersTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<Player, String> nameCol = new TableColumn<>("Jméno");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+        TableColumn<Player, Integer> winsCol = new TableColumn<>("Výhry");
+        winsCol.setCellValueFactory(new PropertyValueFactory<>("gamesWon"));
+        winsCol.setStyle("-fx-alignment: CENTER;");
+
+        TableColumn<Player, String> rateCol = new TableColumn<>("Úspěšnost");
+        rateCol.setCellValueFactory(c -> new SimpleStringProperty(
+                String.format("%.1f %%", c.getValue().getWinRate())
+        ));
+        rateCol.setStyle("-fx-alignment: CENTER-RIGHT;");
+
+        playersTable.getColumns().addAll(nameCol, winsCol, rateCol);
+        playersTable.getItems().addAll(dataManager.getTopPlayers(10));
+
+        playersBox.getChildren().addAll(playersTitle, playersTable);
         playersTab.setContent(playersBox);
 
-        // all games
-        Tab allGamesTab = new Tab("Všechny hry");
+        Tab allGamesTab = new Tab("Historie");
         allGamesTab.setClosable(false);
-        VBox allGamesBox = new VBox(10);
-        allGamesBox.setPadding(new Insets(10));
-        Label allGamesTitle = new Label("HISTORIE VŠECH HER");
-        allGamesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        TextArea allGamesArea = new TextArea();
-        allGamesArea.setEditable(false);
-        allGamesArea.setPrefHeight(400);
-        List<GameResult> allGames = dataManager.getAllResults();
-        StringBuilder allGamesSb = new StringBuilder();
-        for (GameResult result : allGames) {
-            allGamesSb.append(result.toString()).append("\n");
-        }
-        allGamesArea.setText(allGamesSb.toString());
-        allGamesBox.getChildren().addAll(allGamesTitle, allGamesArea);
-        allGamesTab.setContent(allGamesBox);
 
+        VBox allGamesBox = new VBox(10);
+        allGamesBox.setPadding(new Insets(15));
+
+        Label allGamesTitle = new Label("Odehrané hry");
+        allGamesTitle.getStyleClass().add("subtitle-label");
+
+        TableView<GameResult> gamesTable = new TableView<>();
+        gamesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<GameResult, String> whiteCol = new TableColumn<>("Bílý");
+        whiteCol.setCellValueFactory(new PropertyValueFactory<>("whitePlayerName"));
+
+        TableColumn<GameResult, String> blackCol = new TableColumn<>("Černý");
+        blackCol.setCellValueFactory(new PropertyValueFactory<>("blackPlayerName"));
+
+        TableColumn<GameResult, String> winnerCol = new TableColumn<>("Vítěz");
+        winnerCol.setCellValueFactory(new PropertyValueFactory<>("winner"));
+
+        TableColumn<GameResult, String> timeCol = new TableColumn<>("Čas");
+        timeCol.setCellValueFactory(c -> {
+            long s = c.getValue().getGameDurationSeconds();
+            return new SimpleStringProperty(String.format("%d:%02d", s / 60, s % 60));
+        });
+        timeCol.setStyle("-fx-alignment: CENTER-RIGHT;");
+
+        gamesTable.getColumns().addAll(whiteCol, blackCol, winnerCol, timeCol);
+        gamesTable.getItems().addAll(dataManager.getAllResults());
+
+        allGamesBox.getChildren().addAll(allGamesTitle, gamesTable);
+        allGamesTab.setContent(allGamesBox);
+        //completing
         tabPane.getTabs().addAll(playersTab, allGamesTab);
 
-        VBox mainBox = new VBox(10);
-        mainBox.setPadding(new Insets(10));
+        VBox mainBox = new VBox(15);
+        mainBox.setPadding(new Insets(20));
+        mainBox.setAlignment(Pos.CENTER);
 
         Button backButton = new Button("Zpět do menu");
-        backButton.setOnAction(e -> showMainMenu());
+        backButton.getStyleClass().add("button-cancel");
+        backButton.setOnAction(e -> {
+            showMainMenu();
+        });
 
         mainBox.getChildren().addAll(tabPane, backButton);
 
         Scene scene = new Scene(mainBox, 800, 600);
+        loadStyles(scene);
+
         primaryStage.setScene(scene);
     }
 
-    /**
-     * Starts a new game with the given players.
-     */
     private void startGame(Player whitePlayer, Player blackPlayer) {
         Label infoLabel = new Label();
-        infoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10;");
+        infoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
         Board board = new Board(800, 800, whitePlayer, blackPlayer, dataManager, infoLabel);
 
         VBox gameBox = new VBox(10);
         gameBox.setPadding(new Insets(10));
-        gameBox.setAlignment(Pos.CENTER); // Zarovnání na střed
+        gameBox.setAlignment(Pos.CENTER);
 
-        Button backButton = new Button("Zpět do menu");
+        Button backButton = new Button("Ukončit hru");
+        backButton.getStyleClass().add("button-cancel");
         backButton.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Ukončit hru");
+            alert.setTitle("Ukončit");
             alert.setHeaderText("Opravdu chcete ukončit hru?");
             alert.setContentText("Hra nebude uložena.");
 
@@ -212,10 +263,10 @@ public class Main extends Application {
             });
         });
 
-        // above game
         gameBox.getChildren().addAll(infoLabel, board, backButton);
 
         Scene scene = new Scene(gameBox, 850, 950);
+        loadStyles(scene);
         primaryStage.setScene(scene);
     }
 
@@ -225,6 +276,17 @@ public class Main extends Application {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    /**
+     * Helper to load CSS
+     */
+    private void loadStyles(Scene scene) {
+        try {
+            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        } catch (Exception ex) {
+            System.err.println("Nepodařilo se načíst styles.css");
+        }
     }
 
     public static void main(String[] args) {

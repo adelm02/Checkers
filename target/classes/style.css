@@ -1,0 +1,48 @@
+/* Pozadí celého okna */
+.root {
+    -fx-background-color: #f0f0f0;
+    -fx-font-family: 'Arial';
+}
+
+/* Hlavní nadpis */
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+/* Textová pole */
+.text-field {
+    -fx-background-radius: 5;
+    -fx-padding: 5;
+    -fx-font-size: 14px;
+}
+
+/* Obecný styl pro tlačítka */
+.button {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 40px;
+}
+
+/* Tlačítko pro hlavní akci (Modré) */
+.button-action {
+    -fx-background-color: #2196F3;
+}
+
+.button-action:hover {
+    -fx-background-color: #1976D2;
+}
+
+/* Tlačítko pro zrušení/zpět (Šedé) */
+.button-cancel {
+    -fx-background-color: #9E9E9E;
+}
+
+.button-cancel:hover {
+    -fx-background-color: #757575;
+}
