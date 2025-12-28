@@ -3,7 +3,6 @@
     -fx-font-family: 'Arial', sans-serif;
 }
 
-/* Nadpisy */
 .title-label {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
@@ -17,7 +16,7 @@
     -fx-text-fill: #555;
 }
 
-/* Tlačítka - jednoduchý flat design */
+/* buttons */
 .button {
     -fx-background-color: #555;
     -fx-text-fill: white;
@@ -26,14 +25,13 @@
     -fx-background-radius: 5;
     -fx-cursor: hand;
     -fx-pref-width: 200px;
-    -fx-pref-height: 40px;
+    -fx-pref-height: 35px;
 }
 
 .button:hover {
     -fx-background-color: #333;
 }
 
-/* Akční tlačítko (Zelené) */
 .button-action {
     -fx-background-color: #2e8b57;
 }
@@ -42,7 +40,6 @@
     -fx-background-color: #1e5b39;
 }
 
-/* Zrušovací tlačítko (Červené) */
 .button-cancel {
     -fx-background-color: #d9534f;
 }
@@ -51,14 +48,14 @@
     -fx-background-color: #c9302c;
 }
 
-/* Textová pole */
+
 .text-field {
     -fx-background-radius: 3;
     -fx-padding: 5;
     -fx-font-size: 14px;
 }
 
-/* Tabulka - čistá a jednoduchá */
+/* table */
 .table-view {
     -fx-background-color: white;
     -fx-border-color: #ccc;
@@ -83,5 +80,5 @@
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #dbeeff; /* Světle modrá pro výběr */
+    -fx-background-color: #dbeeff;
 }

@@ -25,7 +25,7 @@
     -fx-background-radius: 5;
     -fx-cursor: hand;
     -fx-pref-width: 200px;
-    -fx-pref-height: 40px;
+    -fx-pref-height: 35px;
 }
 
 .button:hover {

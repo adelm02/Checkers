@@ -69,7 +69,7 @@ public class Board extends Canvas {
     }
 
     private Image loadImage(String path) {
-        var url = Objects.requireNonNull(Board.class.getResource(path), "Nenašel jsem resource: " + path);
+        var url = Objects.requireNonNull(Board.class.getResource(path), "Error resource: " + path);
         return new Image(url.toExternalForm());
     }
 
@@ -195,6 +195,7 @@ public class Board extends Canvas {
         }
     }
 
+    /* End current turn and switch players */
     private void endTurn() {
         mustContinueJump = false;
         selectedPiece = null;
@@ -207,7 +208,7 @@ public class Board extends Canvas {
      * Checks if game has ended (no pieces or no valid moves).
      */
     private void checkGameEnd() {
-        int whitePieces = 0;
+        int whitePieces = 0;  // count of white pieces remaining
         int blackPieces = 0;
         boolean whiteCanMove = false;
         boolean blackCanMove = false;

@@ -15,9 +15,9 @@ import java.util.Map;
  * Manages saving and loading player data and game results.
  */
 public class DataManager {
-    private static final String DATA_DIR = "data/";
-    private static final String PLAYERS_FILE = DATA_DIR + "players.csv";
-    private static final String RESULTS_FILE = DATA_DIR + "results.csv";
+    private final String DATA_DIR = "data/";
+    private final String PLAYERS_FILE = DATA_DIR + "players.csv";
+    private final String RESULTS_FILE = DATA_DIR + "results.csv";
 
     private final Map<String, Player> players;
     private final List<GameResult> gameResults;
