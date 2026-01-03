@@ -1,16 +1,21 @@
 /*
  * Piece
  *
- * Version 1.0
+ * Version 1.1
  *
  * 2025 Checkers Project
  */
+package lab;
+
 import javafx.scene.image.Image;
+import java.io.Serializable;
 
 /**
  * Represents a checker piece.
  */
-public class Piece extends GameObject {
+public class Piece extends GameObject implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public enum PieceColor {
         WHITE, BLACK
     }

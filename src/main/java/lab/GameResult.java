@@ -1,11 +1,11 @@
 /*
  * GameResult
  *
- * Version 1.0
+ * Version 1.1
  *
  * 2025 Checkers Project
  */
-
+package lab;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 

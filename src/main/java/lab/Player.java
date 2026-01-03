@@ -5,13 +5,16 @@
  *
  * 2025 Checkers Project
  */
+package lab;
+
 import java.io.Serializable;
 
 /**
  * Represents a player with their statistics.
  */
-public class Player {
+public class Player implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private String name;
     private int gamesPlayed;
     private int gamesWon;
@@ -74,10 +77,6 @@ public class Player {
 
     public long getTotalTimeMillis() {
         return totalTimeMillis;
-    }
-
-    public long getAverageTimeSeconds() {
-        return gamesPlayed > 0 ? (totalTimeMillis / 1000) / gamesPlayed : 0;
     }
 
     @Override

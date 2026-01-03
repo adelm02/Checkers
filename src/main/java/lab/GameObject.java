@@ -5,14 +5,21 @@
  *
  * 2025 Checkers Project
  */
+package lab;
+
 import javafx.scene.image.Image;
 import javafx.scene.canvas.GraphicsContext;
+import java.io.Serializable;
 
 /**
  * Base class for drawable game objects.
  */
-public abstract class GameObject implements IDrawable, IPositionable {
-    protected Image image;
+public abstract class GameObject implements DrawableSimulable, Positionable, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    // DŮLEŽITÉ: transient = neukládat obrázek do souboru (obrázky nejdou serializovat)
+    protected transient Image image;
+
     private final double pieceScale = 1.8;
     protected int row;
     protected int col;
@@ -45,6 +52,8 @@ public abstract class GameObject implements IDrawable, IPositionable {
 
     @Override
     public void draw(GraphicsContext gc, int squareSize) {
+        if (image == null) return;
+
         double pieceSize = squareSize * pieceScale;
         double aspect = image.getHeight() / image.getWidth();
         double drawWidth = pieceSize;

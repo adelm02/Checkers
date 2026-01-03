@@ -1,15 +1,17 @@
 /*
  * DataManager
  *
- * Version 1.0
+ * Version 1.1
  *
  * 2025 Checkers Project
  */
+package lab;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Manages saving and loading player data and game results.
@@ -203,9 +205,12 @@ public class DataManager {
         return new ArrayList<>(gameResults);
     }
 
+
+
     public List<Player> getTopPlayers(int limit) {
-        List<Player> playerList = new ArrayList<>(players.values());
-        playerList.sort((p1, p2) -> Double.compare(p2.getWinRate(), p1.getWinRate()));
-        return playerList.subList(0, Math.min(limit, playerList.size()));
+        return players.values().stream()
+                .sorted((p1, p2) -> Double.compare(p2.getWinRate(), p1.getWinRate()))
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 }
